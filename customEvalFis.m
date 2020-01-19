@@ -9,10 +9,10 @@ function [evalFis, Wbar, rules, W] = customEvalFis(fis,data,varargin)
   numSam = size(data.u{:}(:,1),1); %numero de amostras no tempo
   %% avaliando as entradas
   if(~isempty(varargin))
-    [evalMfs, numMembership] = fuzz(fis,data,varargin);
+    [evalMfs, numMembership] = fuzz(fis,data,varargin{:});
   else 
     [evalMfs, numMembership] = fuzz(fis,data);
   end
-  [evalFis, Wbar, rules, W] = customDefuzz(fis, evalMfs, data, numMembership);
+  [evalFis, Wbar, rules, W] = customDefuzz(fis, evalMfs, data, numMembership,varargin{:});
   
 end

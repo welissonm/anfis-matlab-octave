@@ -28,15 +28,24 @@ function [evalFis, Wbar, rulesMap,W] = customDefuzz(fis,evalMfs, data, numMember
   end
   if(~isempty(fis.output))
     output = fis.output(1).mf;
-  elseif(~isempty(varargin))
+  elseif(nargin == 5 && ~isempty(varargin))
     output = varargin{1};
   else
    error('os consequentes nao podem ser nulos ou vazios');
   end
+  if(nargin >= 5 && ~isempty(fis.output) && ~isnumeric(varargin{1}))
+    opt = varargin{1};
+  end
   for k=1:numSam
     for i=1:numRules
-      params_t = output(i).params';
-      evalFis(k,:) = evalFis(k,:) + Wbar(i,k)*(u(k,:)*params_t(1:end-1,:) + params_t(end,:));
+      if(strcmp(output(i).type,'space_states'))
+        sys = output(i).params;
+        evalCustom = opt.defuzzy_function;%% funcao a ser implementada para avaliar o espaco de estado
+        evalFis(k,:) = evalFis(k,:) + Wbar(i,k)*evalCustom(u(k,:),sys, varargin{:},k);
+      else
+        params_t = output(i).params';
+        evalFis(k,:) = evalFis(k,:) + Wbar(i,k)*(u(k,:)*params_t(1:end-1,:) + params_t(end,:)); 
+      end
     end
   end
 end

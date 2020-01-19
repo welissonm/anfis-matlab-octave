@@ -1,4 +1,4 @@
-function newFis = backpropagation(fis, y,u,evalFis0, W0, rules,eta)
+function newFis = backpropagation(fis, y,u,evalFis0, W0, rules,eta,varargin)
   numSam = min(size(y,1), size(u,1)); % numero de amostras
   erro = y-evalFis0;
   numConsequents = size(fis.output(1).mf,2);
@@ -16,6 +16,10 @@ function newFis = backpropagation(fis, y,u,evalFis0, W0, rules,eta)
 %    numMembership = numMembership + size(fis.input(i).mf,2);
 %  end
    W = W0(:,1);
+  if(nargin >= 5 && ~isempty(fis.output) && ~isnumeric(varargin{1}))
+    opt = varargin{1};
+    evalCustom = opt.defuzzy_function;%% funcao a ser implementada para avaliar o espaco de estado
+  end
   evalFis = evalFis0;
   for k=1:numSam
     erro(k,:) = y(k,:) - evalFis(k,:);
@@ -24,8 +28,12 @@ function newFis = backpropagation(fis, y,u,evalFis0, W0, rules,eta)
     d4 = d5;
     d3 = zeros(numConsequents,1);
     for i=1:numConsequents
-      params_t = fis.output(1).mf(1,i).params';
-      d3(i,1) = d4*(u(k,:)*params_t(1:end-1,:) + params_t(end,:));
+      if(strcmp(fis.output(1).mf(1,i).type,'space_states'))
+        d3(i,1) = d4*evalCustom(u(k,:),fis.output(1).mf(1,i).params,varargin{:},k);
+      else
+        params_t = fis.output(1).mf(1,i).params';
+        d3(i,1) = d4*(u(k,:)*params_t(1:end-1,:) + params_t(end,:)); 
+      end
     end
     d2 = zeros(numConsequents,1);
     sumW = sum(W);
@@ -85,7 +93,7 @@ function newFis = backpropagation(fis, y,u,evalFis0, W0, rules,eta)
       end
     end
 %    fis.input = newFis;
-    [evalFisAux, Wbar, _, W] = customEvalFis(newFis,dataAux);
+    [evalFisAux, Wbar, _, W] = customEvalFis(newFis,dataAux,varargin{:});
     evalFis(k,:) = evalFisAux;
   end
 end

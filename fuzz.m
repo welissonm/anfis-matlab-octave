@@ -5,7 +5,7 @@ function [evalMF,numMembership] = fuzz(fis,data,varargin)
   evalMF = struct();
   numMembership = zeros(numIn,1);
   u = data.u{:};
-  if(~isempty(varargin))
+  if(~isempty(varargin) && isnumeric(varargin{1}))
     numSam = varargin{1};
   else
     numSam = size(data.u{:}(:,1),1); %numero de amostras no tempo
